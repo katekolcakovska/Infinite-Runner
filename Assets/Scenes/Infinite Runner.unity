@@ -743,6 +743,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: efcbfaf146228ad40ae6c878d7806d64, type: 3}
+--- !u!95 &1716843332 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2542235260665009449, guid: 1d18c1c89f61ca0499b1b478fb8f85d9,
+    type: 3}
+  m_PrefabInstance: {fileID: 4793982823263535519}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1840061697
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -862,6 +868,26 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8882673341280281961, guid: 1d18c1c89f61ca0499b1b478fb8f85d9,
+        type: 3}
+      propertyPath: anim
+      value: 
+      objectReference: {fileID: 1716843332}
+    - target: {fileID: 8882673341280281961, guid: 1d18c1c89f61ca0499b1b478fb8f85d9,
+        type: 3}
+      propertyPath: movementEase
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8882673341280281961, guid: 1d18c1c89f61ca0499b1b478fb8f85d9,
+        type: 3}
+      propertyPath: movementInterval
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8882673341280281961, guid: 1d18c1c89f61ca0499b1b478fb8f85d9,
+        type: 3}
+      propertyPath: horizontalMovementDelta
+      value: 1.8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
