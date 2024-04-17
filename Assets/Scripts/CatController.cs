@@ -18,6 +18,7 @@ public class CatController : MonoBehaviour
     private PositionState characterPosition;
     private Vector3 targetPos;
     private bool isMoving;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -41,6 +42,7 @@ public class CatController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftArrow) && characterPosition != PositionState.Left && isMoving == false)
         {
             isMoving = true;
+            
 
             if (characterPosition == PositionState.Center)
             {
@@ -61,12 +63,19 @@ public class CatController : MonoBehaviour
                 Debug.Log("Cat reached its destination");
                 isMoving = false;
             });
+            transform.DOLocalRotate(new Vector3(0.0f, -90.0f, 0.0f), 0.5f, RotateMode.Fast).OnComplete(() =>
+           {
+
+               StartCoroutine(StopRotation());
+
+           });
         }
 
         // moving right
-        if (Input.GetKeyDown(KeyCode.RightArrow) && characterPosition != PositionState.Right && isMoving == false)
+        if (Input.GetKeyDown(KeyCode.RightArrow) && characterPosition != PositionState.Right && isMoving == false )
         {
             isMoving = true;
+            
 
             if (characterPosition == PositionState.Center)
             {
@@ -87,9 +96,21 @@ public class CatController : MonoBehaviour
                 Debug.Log("Cat reached its destination");
                 isMoving = false;
             });
+
+            transform.DOLocalRotate(new Vector3(0.0f, 90.0f, 0.0f), 0.5f, RotateMode.Fast).OnComplete(() =>
+            {
+                
+                StartCoroutine(StopRotation());
+
+            });
+            
         }
     }
-
+    IEnumerator StopRotation()
+    {
+        yield return new WaitForSeconds(0.3f);
+        transform.DOLocalRotate(new Vector3(0.0f, 0.0f, 0.0f), 0.5f, RotateMode.Fast);
+    }
     private void JumpAndSlide()
     {
         // moving left
