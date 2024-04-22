@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using SimpleInputNamespace;
 
 public class CatController : MonoBehaviour
 {
@@ -93,7 +94,7 @@ public class CatController : MonoBehaviour
         }
 
         // moving right
-        if ((Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) && characterPosition != PositionState.Right && isMoving == false )
+        if (GetMoveRightInput() && characterPosition != PositionState.Right && isMoving == false )
         {
             isMoving = true;
             
@@ -189,11 +190,17 @@ public class CatController : MonoBehaviour
     private bool GetMoveLeftInput()
     {
 
+        if(SimpleInput.GetAxis("Horizontal") < 0)
+        {
+            return true;
+        }
+        return false;
+
 #if UNITY_EDITOR || UNITY_STANDALONE
-        // Debug.Log("Code for Windows");
-        return Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A);
+            // Debug.Log("Code for Windows");
+            return Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A);
 #elif UNITY_ANDROID
- 
+ /*
         // get input for mobile
         if (Input.touchCount > 0)
         {
@@ -215,11 +222,22 @@ public class CatController : MonoBehaviour
                 }
             }
  
-        }
+        }*/
 
        return false;
         Debug.Log("Code for android");
 #endif
+    }
+
+    private bool GetMoveRightInput()
+    {
+
+        if (SimpleInput.GetAxis("Horizontal") > 0)
+        {
+            return true;
+        }
+
+        return false;
     }
     private enum PositionState
     {
