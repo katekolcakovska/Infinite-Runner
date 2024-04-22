@@ -5,20 +5,38 @@ using DG.Tweening;
 
 public class CatController : MonoBehaviour
 {
+
     [Tooltip("How far to the left or right will cat move?")]
     [SerializeField] private float horizontalMovementDelta;
+
     [Tooltip("How fast does the character move horizontally")]
     [SerializeField] private float movementInterval;
-    [SerializeField] private Ease movementEase;
-    [SerializeField] private Animator anim;
 
+    [SerializeField] private Ease movementEase;
+    [SerializeField] private Ease rotationEase;
+
+    [SerializeField] private Animator anim;
+    [SerializeField] private Transform catCollider;
+
+    [SerializeField] private float colliderJumpPos;
+    [SerializeField] private float jumpInterval;
+    [SerializeField] private Ease jumpUpEase;
+    [SerializeField] private Ease jumpDownEase;
+
+    [SerializeField] private float colliderSlidePos;
+    [SerializeField] private float slideInterval;
+    [SerializeField] private Ease slideUpEase;
+    [SerializeField] private Ease slideDownEase;
+    [SerializeField] private float swipeThreshholdDelta;
 
     private Vector3 centerPos;
 
     private PositionState characterPosition;
     private Vector3 targetPos;
     private bool isMoving;
-    
+
+    private Vector3 originalColPos;
+    private Vector2 touchStartPos;
 
     // Start is called before the first frame update
     void Start()
@@ -27,6 +45,7 @@ public class CatController : MonoBehaviour
         centerPos = transform.position;
 
         characterPosition = PositionState.Center;
+        originalColPos = catCollider.localPosition;
     }
 
     // Update is called once per frame
@@ -39,7 +58,7 @@ public class CatController : MonoBehaviour
     private void HorizontalMovement()
     {
         // moving left
-        if (Input.GetKeyDown(KeyCode.LeftArrow) && characterPosition != PositionState.Left && isMoving == false)
+        if (GetMoveLeftInput() && characterPosition != PositionState.Left && isMoving == false)
         {
             isMoving = true;
             
@@ -63,7 +82,9 @@ public class CatController : MonoBehaviour
                 Debug.Log("Cat reached its destination");
                 isMoving = false;
             });
-            transform.DOLocalRotate(new Vector3(0.0f, -90.0f, 0.0f), 0.5f, RotateMode.Fast).OnComplete(() =>
+
+            /*transform.DOLocalRotate(Vector3.up * -90, movementInterval / 2).SetEase(rotationEase); od cas e ova*/
+            transform.DOLocalRotate(new Vector3(0.0f, -90.0f, 0.0f), 0.5f, RotateMode.Fast).SetEase(rotationEase).OnComplete(() =>
            {
 
                StartCoroutine(StopRotation());
@@ -72,7 +93,7 @@ public class CatController : MonoBehaviour
         }
 
         // moving right
-        if (Input.GetKeyDown(KeyCode.RightArrow) && characterPosition != PositionState.Right && isMoving == false )
+        if ((Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) && characterPosition != PositionState.Right && isMoving == false )
         {
             isMoving = true;
             
@@ -91,13 +112,16 @@ public class CatController : MonoBehaviour
             // teleportation code 
             // transform.position = targetPos;
             // animation code
+            
+
             transform.DOMove(targetPos, movementInterval).SetEase(movementEase).OnComplete(() =>
             {
                 Debug.Log("Cat reached its destination");
                 isMoving = false;
             });
 
-            transform.DOLocalRotate(new Vector3(0.0f, 90.0f, 0.0f), 0.5f, RotateMode.Fast).OnComplete(() =>
+            /*transform.DOLocalRotate(Vector3.up * 90, movementInterval / 2).SetEase(rotationEase); od cas e ova*/
+            transform.DOLocalRotate(new Vector3(0.0f, 90.0f, 0.0f), 0.5f, RotateMode.Fast).SetEase(rotationEase).OnComplete(() =>
             {
                 
                 StartCoroutine(StopRotation());
@@ -109,12 +133,12 @@ public class CatController : MonoBehaviour
     IEnumerator StopRotation()
     {
         yield return new WaitForSeconds(0.3f);
-        transform.DOLocalRotate(new Vector3(0.0f, 0.0f, 0.0f), 0.5f, RotateMode.Fast);
+        transform.DOLocalRotate(new Vector3(0.0f, 0.0f, 0.0f), 0.5f, RotateMode.Fast).SetEase(rotationEase);
     }
     private void JumpAndSlide()
     {
-        // moving left
-        if (Input.GetKeyDown(KeyCode.UpArrow) && isMoving == false)
+        // jumping
+        if ((Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) && isMoving == false)
         {
             isMoving = true;
 
@@ -122,12 +146,23 @@ public class CatController : MonoBehaviour
             anim.ResetTrigger("Jump");
             anim.SetTrigger("Jump");
 
-            isMoving = false;
+            // animating the position of the collider
+            
+            catCollider.DOLocalMove(Vector3.up * colliderJumpPos, jumpInterval / 2).SetEase(jumpUpEase).OnComplete(() =>
+           {
+               catCollider.DOLocalMove(originalColPos, jumpInterval / 2).SetEase(jumpDownEase).OnComplete(() =>
+               {
+                   isMoving = false;
+               });
+               
+           });
+
+            
 
         }
 
-        // moving right
-        if (Input.GetKeyDown(KeyCode.DownArrow) && isMoving == false)
+        // sliding
+        if ((Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) && isMoving == false)
         {
             isMoving = true;
 
@@ -135,9 +170,56 @@ public class CatController : MonoBehaviour
             anim.ResetTrigger("Slide");
             anim.SetTrigger("Slide");
 
-            isMoving = false;
+            
+
+            // animating the position of the collider
+
+            catCollider.DOLocalMove(Vector3.up * colliderSlidePos, slideInterval / 2).SetEase(slideDownEase).OnComplete(() =>
+            {
+                catCollider.DOLocalMove(originalColPos, slideInterval / 2).SetEase(slideUpEase).OnComplete(() =>
+                {
+                    isMoving = false;
+                });
+
+            });
 
         }
+    }
+
+    private bool GetMoveLeftInput()
+    {
+
+#if UNITY_EDITOR || UNITY_STANDALONE
+        // Debug.Log("Code for Windows");
+        return Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A);
+#elif UNITY_ANDROID
+ 
+        // get input for mobile
+        if (Input.touchCount > 0)
+        {
+            Touch firstTouch = Input.GetTouch(0);
+ 
+            if (firstTouch.phase == TouchPhase.Began)
+            {
+                touchStartPos = firstTouch.position;
+            }
+            else if (firstTouch.phase == TouchPhase.Moved)
+            {
+                // check if player swiped to the left
+                Vector2 currentTouchPos = firstTouch.position;
+                float horizontalDelta = currentTouchPos.x - touchStartPos.x;
+                if (horizontalDelta < 0 && Mathf.Abs(horizontalDelta) > swipeThresholdDelta) 
+                {
+                    // player swiped to the left
+                    return true;
+                }
+            }
+ 
+        }
+
+       return false;
+        Debug.Log("Code for android");
+#endif
     }
     private enum PositionState
     {
